@@ -1,4 +1,5 @@
 using AdminBookShop.Models;
+using Core.OrderService;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,27 +7,30 @@ namespace AdminBookShop.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly OrderService _orderService;
+        public HomeController(OrderService orderService)
         {
-            _logger = logger;
+            _orderService = orderService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var data = await _orderService.GetAllOrders();
+            return View(data);
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Edit(int id)
         {
-            return View();
+            var data = await _orderService.GetOrderWithId(id);
+            return View(data);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SetStatusCommand([FromBody] StatusDto model)
+        {
+            var data = await _orderService.SetStatus(model.Id, model.State);
+            return Ok(new { res = data });
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
+
     }
 }

@@ -29,5 +29,7 @@ namespace AdminBookShop.Controllers
             var data = await _orderService.SetStatus(model.Id, model.State);
             return Ok(new {res=data});
         }
+
+
     }
 }
