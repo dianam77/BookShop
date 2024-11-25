@@ -1,0 +1,117 @@
+﻿@model Bookshop.Models.BookWithSameAuthorViewModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="myHeader">
+    <div class="headerItems">
+        <img class="headImg1" style="width:280px; height:600px;" src="/downloadFile/@Model.CurrentBook.Img" alt="@Model.CurrentBook.Title" />
+    </div>
+
+    <input type="hidden" id="bookId" value="@Model.CurrentBook.Id" />
+    <div class="headerItems">
+        <h1>
+            @Model.CurrentBook.Title
+        </h1>
+        <p>
+            @Model.CurrentBook.Description
+        </p>
+        <p>
+            @Model.CurrentBook.Author.Name
+        </p>
+
+        <div class="bookPrice">
+            <input id="bookIntPrice" type="hidden" value="15000">
+            <strong id="bookShowPrice"> @Model.CurrentBook.Price تومان </strong>
+            <div>
+                تعداد :  <input id="countInput" type="number" min="1" value="1">
+            </div>
+        </div>
+
+        @if (Model.CurrentBook.IsAvail)
+
+        {
+            <a onclick="AddToBasket()" class="cardbtn" style="margin-top: 15px;">
+                افزودن به سبد
+            </a>
+            <br>
+        }
+
+        else
+
+        {
+            <a asp-controller="Book" asp-action="BookList" class="cardbtn" style="margin-top: 15px;">
+                اتمام موجودی
+            </a>
+            <br>
+        }
+    </div>
+</div>
+<h3>کتاب‌های دیگر از نویسنده:</h3>
+<ul>
+    @if (Model.BooksBySameAuthor != null && Model.BooksBySameAuthor.Any())
+    {
+        @foreach (var book in Model.BooksBySameAuthor)
+        {
+            <li>
+                <a href="@Url.Action("Index", "Book", new { id = book.Id })">
+                    <img src="/downloadFile/@book.Img" alt="@book.Title" style="width: 100px; height: 150px;" />
+                    <p>@book.Title</p>
+                </a>
+            </li>
+        }
+    }
+    else
+    {
+        <p>کتابی از نویسنده پیدا نشد.</p>
+    }
+</ul>
+
+
+@section Scripts {
+    <script>
+        function AddToBasket() {
+            var bookId = document.getElementById("bookId").value;
+            var qty = document.getElementById("countInput").value;
+            var data = {
+                bookId: bookId,
+                qty: qty
+            };
+            try {
+                fetch('/Order/AddToBasket/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(Response => Response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        if (data.res == false) {
+                            Swal.fire({
+                                title: "ثبت نام",
+                                text: "شما باید در سایت لاگین کنید!",
+                                icon: "question"
+                            });
+                        } else {
+                            Swal.fire({
+                                position: "top-end",
+                                icon: "success",
+                                title: "Your work has been saved",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            } catch {
+
+            }
+        }
+    </script>
+}
