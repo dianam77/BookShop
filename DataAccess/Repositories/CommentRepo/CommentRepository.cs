@@ -45,8 +45,6 @@ namespace DataAccess.Repositories.CommentRepo
             _context.Comments.Update(reply);
             await _context.SaveChangesAsync();
         }
-
-
         public async Task Delete(int id)
         {
             var comment = await _context.Comments.FindAsync(id);
