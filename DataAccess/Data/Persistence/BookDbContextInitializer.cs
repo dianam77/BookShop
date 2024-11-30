@@ -41,7 +41,7 @@ public class BookDbContextInitializer
             _logger.LogError(ex, "An error occurred while seeding the database.");
             throw;
         }
-    }    
+    }
 
     public void TrySeed()
     {
@@ -50,7 +50,7 @@ public class BookDbContextInitializer
         if (!_context.Authors.Any())
         {
             _context.Authors.AddRange(
-                new Author { Name = " اریش ماریا رمارک" },
+                new Author { Name = "اریش ماریا رمارک" },
                 new Author { Name = "کریستوفر پائولینی" }
             );
         }
@@ -71,7 +71,7 @@ public class BookDbContextInitializer
                 },
                 new Book
                 {
-                    Title = " الدست ",
+                    Title = "الدست",
                     Description = "داستان‌های فانتزی و هیجان انگیز...",
                     Price = 460000,
                     Img = "/uploads/test2.jpg",
@@ -82,7 +82,7 @@ public class BookDbContextInitializer
                 },
                 new Book
                 {
-                    Title = " من پیام رسان هستم ",
+                    Title = "من پیام رسان هستم",
                     Description = "کتاب من پیام رسان هستم نوشته‌ی مارکوس زوساک، داستان زندگی راننده‌تاکسی جوان و ناامید و تنهایی است که ناخواسته وارد یک بازی پیچیده می‌شود و مأموریت‌هایی عجیب به او محول می‌گردد. اد کِندی پس‌ از اینکه به شکلی تصادفی مانع سرقت از یک بانک می‌شود و به شهرت می‌رسد، نامه‌ای ناشناس در صندوق پستی خود می‌یابد... گفتنی است که این کتاب برنده‌ی جایزه‌ی شورای کتاب کودک استرالیا شده است.",
                     Price = 58000,
                     Img = "/uploads/test3.jpg",
@@ -94,40 +94,150 @@ public class BookDbContextInitializer
             );
         }
 
-        _context.SaveChanges();        
+        // Adding Comments and Replies
+        if (!_context.Comments.Any())
+        {
+            var comments = new List<Comment>
+        {
+            new Comment
+            {
+                Text = "این کتاب فوق‌العاده است!",
+                BookId = 1,
+                UserId = "user1",
+                UserName = "User A",
+                Created = DateTime.Now
+            },
+            new Comment
+            {
+                Text = "چقدر جذاب!",
+                BookId = 1,
+                UserId = "user2",
+                UserName = "User B",
+                Created = DateTime.Now
+            }
+        };
+
+            // Add Comments to Context
+            _context.Comments.AddRange(comments);
+            _context.SaveChanges();
+
+            // Adding Replies
+            var replies = new List<Comment>
+        {
+            new Comment
+            {
+                Text = "کاملاً موافقم!",
+                BookId = 1,
+                UserId = "admin",
+                UserName = "Admin",
+                Created = DateTime.Now,
+                ReplyId = comments[0].Id // Reply to the first comment
+            },
+            new Comment
+            {
+                Text = "ممنون بابت بازخوردتون!",
+                BookId = 1,
+                UserId = "admin",
+                UserName = "Admin",
+                Created = DateTime.Now,
+                ReplyId = comments[1].Id // Reply to the second comment
+            }
+        };
+
+            // Add Replies to Context
+            _context.Comments.AddRange(replies);
+        }
+
+        _context.SaveChanges();
     }
+
 
     private static async Task SeedUsers(UserManager<User> userManager)
     {
-        var userName = "UserA";
-        var userEmail = "usera@example.com";
-        var userPassword = "zxcvb1234";
-
-        // Check if the user already exists
-        var user = await userManager.FindByNameAsync(userName);
-        if (user == null)
+        // Define the users to be added
+        var users = new List<User>
+    {
+        new User
         {
-            // Create a new user
-            user = new User
-            {
-                Id = "user1",
-                UserName = userName,
-                NormalizedUserName = userName.ToUpper(),
-                Email = userEmail,
-                NormalizedEmail = userEmail.ToUpper(),
-                FullName = "User A",
-                SecurityStamp = Guid.NewGuid().ToString()
-            };
+            Id = "user1",
+            UserName = "UserA",
+            NormalizedUserName = "USERA",
+            Email = "usera@example.com",
+            NormalizedEmail = "USERA@EXAMPLE.COM",
+            FullName = "User A",
+            SecurityStamp = Guid.NewGuid().ToString()
+        },
+        new User
+        {
+            Id = "user2",
+            UserName = "UserB",
+            NormalizedUserName = "USERB",
+            Email = "userb@example.com",
+            NormalizedEmail = "USERB@EXAMPLE.COM",
+            FullName = "User B",
+            SecurityStamp = Guid.NewGuid().ToString()
+        }
+    };
 
-            var result = await userManager.CreateAsync(user, userPassword);
+        // Define the passwords for the users
+        var userPasswords = new Dictionary<string, string>
+    {
+        { "UserA", "zxcvb1234" },
+        { "UserB", "asdfg1234" }
+    };
 
-            if (result.Succeeded)
+        foreach (var user in users)
+        {
+            var existingUser = await userManager.FindByNameAsync(user.UserName);
+            if (existingUser == null)
             {
-                Console.WriteLine("User created successfully.");
+                var result = await userManager.CreateAsync(user, userPasswords[user.UserName]);
+                if (result.Succeeded)
+                {
+                    Console.WriteLine($"User {user.UserName} created successfully.");
+                }
+                else
+                {
+                    Console.WriteLine($"Error creating user {user.UserName}:");
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"Code: {error.Code}, Description: {error.Description}");
+                    }
+                }
             }
             else
             {
-                Console.WriteLine("Error creating user:");
+                Console.WriteLine($"User {user.UserName} already exists.");
+            }
+        }
+
+        // Check if the admin user already exists
+        var adminName = "Admin";
+        var adminEmail = "admin@example.com";
+        var adminPassword = "admin1234";
+
+        var admin = await userManager.FindByNameAsync(adminName);
+        if (admin == null)
+        {
+            admin = new User
+            {
+                Id = "admin",
+                UserName = adminName,
+                NormalizedUserName = adminName.ToUpper(),
+                Email = adminEmail,
+                NormalizedEmail = adminEmail.ToUpper(),
+                FullName = "Admin User",
+                SecurityStamp = Guid.NewGuid().ToString()
+            };
+
+            var result = await userManager.CreateAsync(admin, adminPassword);
+            if (result.Succeeded)
+            {
+                Console.WriteLine("Admin created successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Error creating admin:");
                 foreach (var error in result.Errors)
                 {
                     Console.WriteLine($"Code: {error.Code}, Description: {error.Description}");
@@ -136,7 +246,8 @@ public class BookDbContextInitializer
         }
         else
         {
-            Console.WriteLine("User already exists.");
+            Console.WriteLine("Admin already exists.");
         }
     }
+
 }

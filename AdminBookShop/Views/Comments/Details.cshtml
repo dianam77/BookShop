@@ -1,0 +1,59 @@
+﻿@model DataAccess.Models.Comment
+
+@{
+    ViewData["Title"] = "Comment Details";
+}
+
+<h1>Comment Details</h1>
+
+<div>
+    <h4>Comment</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Text)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Text)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.UserName)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.UserName)</dd>
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Created)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Created)</dd>
+    </dl>
+</div>
+
+<div>
+    <h4>Replies</h4>
+    @if (Model.Replies != null && Model.Replies.Any())
+    {
+        foreach (var reply in Model.Replies)
+        {
+            <div>
+                <p>@reply.Text - <small>@reply.UserName (@reply.Created.ToString("g"))</small></p>
+                @if (reply.UserId == "Admin")
+                {
+                    <a asp-action="EditReply" asp-route-id="@reply.Id">Edit</a>
+                    <a asp-action="DeleteReply" asp-route-id="@reply.Id">Delete</a>
+               }
+            </div>
+        }
+    }
+    else
+    {
+        <p>No replies available.</p>
+    }
+</div>
+
+<div>
+    <h4>Reply to Comment</h4>
+    <form asp-action="Reply">
+        <input type="hidden" name="commentId" value="@Model.Id" />
+        <div class="form-group">
+            <textarea name="replyText" class="form-control" placeholder="Enter your reply here"></textarea>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Reply" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

@@ -8,6 +8,7 @@ using DataAccess.Models;
 using DataAccess.Repositories.AuthorRepo;
 using DataAccess.Repositories.BasketRepo;
 using DataAccess.Repositories.BookRepo;
+using DataAccess.Repositories.CommentRepo;
 using Microsoft.AspNetCore.Identity;
 
 namespace AdminBookShop;
@@ -22,6 +23,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IBasketRepository, BasketRepository>();
         services.AddScoped<OrderService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
 
         services.AddIdentity<User, Role>(options => {
             options.Password.RequireDigit = false;

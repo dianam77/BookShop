@@ -26,5 +26,7 @@ namespace DataAccess.Models
         public Author? Author { get; set; }
 
         public ICollection<BasketItems>? BasketItems { get; set; }
+
+        public ICollection<Comment>? Comment { get; set; }
     }
 }

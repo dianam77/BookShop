@@ -151,6 +151,45 @@ namespace DataAccess.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("DataAccess.Models.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReplyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.HasIndex("ReplyId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("DataAccess.Models.Role", b =>
                 {
                     b.Property<string>("Id")
@@ -393,6 +432,23 @@ namespace DataAccess.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("DataAccess.Models.Comment", b =>
+                {
+                    b.HasOne("DataAccess.Models.Book", "Book")
+                        .WithMany("Comment")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccess.Models.Comment", "Reply")
+                        .WithMany("Replies")
+                        .HasForeignKey("ReplyId");
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Reply");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("DataAccess.Models.Role", null)
@@ -457,6 +513,13 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("DataAccess.Models.Book", b =>
                 {
                     b.Navigation("BasketItems");
+
+                    b.Navigation("Comment");
+                });
+
+            modelBuilder.Entity("DataAccess.Models.Comment", b =>
+                {
+                    b.Navigation("Replies");
                 });
 #pragma warning restore 612, 618
         }

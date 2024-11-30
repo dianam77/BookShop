@@ -1,7 +1,10 @@
 ﻿using Bookshop.Models;
 using Core.BookService;
 using Core.ServiceFile;
+using DataAccess.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Bookshop.Controllers
 {
@@ -18,26 +21,75 @@ namespace Bookshop.Controllers
 
         public async Task<IActionResult> Index(int id)
         {
-            // Get the current book by ID
             var book = await _bookService.GetBookById(id);
             if (book == null)
             {
                 return NotFound("Book not found.");
             }
 
-            // Get other books by the same author (excluding the current book)
             var booksBySameAuthor = await _bookService.GetBooksBySameAuthor(id, book.AuthorId);
+            var comments = await _bookService.GetCommentsByBookId(id);
 
-            // Prepare the ViewModel and pass it to the view
             var model = new BookWithSameAuthorViewModel
             {
                 CurrentBook = book,
-                BooksBySameAuthor = booksBySameAuthor
+                BooksBySameAuthor = booksBySameAuthor,
+                Comments = comments,
+                CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) // Set current user ID
             };
 
             return View(model);
         }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> AddComment(int bookId, string text, int? replyId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userName = User.Identity.Name;
 
+            var comment = new Comment
+            {
+                BookId = bookId,
+                Text = text,
+                Created = DateTime.Now,
+                UserId = userId,
+                UserName = userName,
+                ReplyId = replyId
+            };
+
+            await _bookService.AddComment(comment);
+            return RedirectToAction("Index", new { id = bookId });
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> DeleteComment(int id, int bookId)
+        {
+            var comment = await _bookService.GetCommentById(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (comment.UserId == userId)
+            {
+                await _bookService.DeleteComment(id);
+            }
+            return RedirectToAction("Index", new { id = bookId });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> EditComment(int id, int bookId, string newText)
+        {
+            var comment = await _bookService.GetCommentById(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (comment.UserId == userId)
+            {
+                comment.Text = newText;
+                await _bookService.UpdateComment(comment);
+            }
+            return RedirectToAction("Index", new { id = bookId });
+        }
 
         public async Task<IActionResult> BookList(int page = 1, int pageSize = 6, string search = null)
         {
@@ -50,7 +102,6 @@ namespace Bookshop.Controllers
             var book = await _bookService.GetBookById(id);
             return PartialView(book);
         }
-
 
         [HttpGet("/downloadFile/{*filePath}")]
         public async Task<IActionResult> DownloadFile(string filePath)

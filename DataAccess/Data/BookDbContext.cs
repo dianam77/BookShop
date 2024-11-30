@@ -12,6 +12,7 @@ namespace DataAccess.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketItems> BasketItems { get; set; }
-        
+
+        public DbSet<Comment> Comments { get; set; }
     }
 }

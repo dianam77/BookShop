@@ -11,65 +11,142 @@
 
     <input type="hidden" id="bookId" value="@Model.CurrentBook.Id" />
     <div class="headerItems">
-        <h1>
-            @Model.CurrentBook.Title
-        </h1>
-        <p>
-            @Model.CurrentBook.Description
-        </p>
-        <p>
-            @Model.CurrentBook.Author.Name
-        </p>
+        <h1>@Model.CurrentBook.Title</h1>
+        <p>@Model.CurrentBook.Description</p>
+        <p>@Model.CurrentBook.Author.Name</p>
 
         <div class="bookPrice">
             <input id="bookIntPrice" type="hidden" value="15000">
-            <strong id="bookShowPrice"> @Model.CurrentBook.Price تومان </strong>
+            <strong id="bookShowPrice">@Model.CurrentBook.Price تومان</strong>
             <div>
-                تعداد :  <input id="countInput" type="number" min="1" value="1">
+                تعداد: <input id="countInput" type="number" min="1" value="1">
             </div>
         </div>
 
         @if (Model.CurrentBook.IsAvail)
 
         {
-            <a onclick="AddToBasket()" class="cardbtn" style="margin-top: 15px;">
-                افزودن به سبد
-            </a>
-            <br>
+            <a onclick="AddToBasket()" class="cardbtn" style="margin-top: 15px;">افزودن به سبد</a>
         }
 
         else
 
         {
-            <a asp-controller="Book" asp-action="BookList" class="cardbtn" style="margin-top: 15px;">
-                اتمام موجودی
-            </a>
-            <br>
+            <a asp-controller="Book" asp-action="BookList" class="cardbtn" style="margin-top: 15px;">اتمام موجودی</a>
         }
     </div>
 </div>
+
 <h3>کتاب‌های دیگر از نویسنده:</h3>
-<ul>
-    @if (Model.BooksBySameAuthor != null && Model.BooksBySameAuthor.Any())
-    {
-        @foreach (var book in Model.BooksBySameAuthor)
+
+<div class="swiper-container">
+    <div class="swiper-wrapper">
+        @if (Model.BooksBySameAuthor != null && Model.BooksBySameAuthor.Any())
+
         {
-            <li>
-                <a href="@Url.Action("Index", "Book", new { id = book.Id })">
-                    <img src="/downloadFile/@book.Img" alt="@book.Title" style="width: 100px; height: 150px;" />
-                    <p>@book.Title</p>
-                </a>
-            </li>
+            @foreach (var book in Model.BooksBySameAuthor)
+
+            {
+                <div class="swiper-slide">
+                    <a href="@Url.Action("Index", "Book", new { id = book.Id })" class="book-link">
+                        <img src="/downloadFile/@book.Img" alt="@book.Title" class="book-image" />
+                        <div class="book-info">
+                            <p class="book-title">@book.Title</p>
+                        </div>
+                    </a>
+                </div>
+            }
+        }
+
+        else
+
+        {
+            <p>کتابی از نویسنده پیدا نشد.</p>
+        }
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
+</div>
+
+
+
+<h3>نظرات:</h3>
+<div>
+    @if (Model.Comments != null && Model.Comments.Any())
+    {
+        @foreach (var comment in Model.Comments.Where(c => !c.ReplyId.HasValue))
+        {
+            <div style="margin-bottom: 20px;">
+                <p>@comment.Text</p>
+                <small>نوشته شده توسط: @comment.UserName | تاریخ: @comment.Created</small>
+
+                @if (comment.UserId == Model.CurrentUserId)
+                {
+                    <div>
+                        <form asp-action="EditComment" method="post" style="display: inline;">
+                            <input type="hidden" name="id" value="@comment.Id" />
+                            <input type="hidden" name="bookId" value="@Model.CurrentBook.Id" />
+                            <textarea name="newText" style="width: 100%; height: 60px; resize: none; margin-bottom: 5px;">@comment.Text</textarea>
+                            <button type="submit" style="margin-bottom: 5px; padding: 2px 5px;" class="btn btn-primary btn-sm">ویرایش</button>
+                        </form>
+                        <form asp-action="DeleteComment" method="post" style="display: inline;">
+                            <input type="hidden" name="id" value="@comment.Id" />
+                            <input type="hidden" name="bookId" value="@Model.CurrentBook.Id" />
+                            <button type="submit" style="margin-bottom: 5px; padding: 2px 5px;" class="btn btn-danger btn-sm">حذف</button>
+                        </form>
+                        <form asp-action="AddComment" method="post" style="display: inline;">
+                            <input type="hidden" name="bookId" value="@Model.CurrentBook.Id" />
+                            <input type="hidden" name="replyId" value="@comment.Id" />
+                            <textarea name="text" style="width: 100%; height: 60px; resize: none; margin-bottom: 5px;"></textarea>
+                            <button type="submit" style="margin-bottom: 5px; padding: 2px 5px;" class="btn btn-success btn-sm">پاسخ</button>
+                        </form>
+                    </div>
+                }
+
+                @foreach (var reply in Model.Comments.Where(r => r.ReplyId == comment.Id && r.UserName == "Admin"))
+                {
+                    <div style="margin-left: 50px; border-left: 2px solid #ddd; padding-left: 10px; margin-top: 10px;">
+                        <p><strong style="color: red;">Admin:</strong> @reply.Text</p>
+                        <small>نوشته شده توسط: @reply.UserName | تاریخ: @reply.Created</small>
+                    </div>
+                }
+            </div>
         }
     }
     else
     {
-        <p>کتابی از نویسنده پیدا نشد.</p>
+        <p>هنوز نظری ثبت نشده است.</p>
     }
-</ul>
+</div>
+
+<h4>افزودن نظر جدید:</h4>
+<form asp-action="AddComment" method="post">
+    <input type="hidden" name="BookId" value="@Model.CurrentBook.Id" />
+    <textarea name="Text" style="width: 100%; height: 120px; resize: none;" required></textarea>
+    <button type="submit" class="btn btn-success">ارسال نظر</button>
+</form>
 
 
 @section Scripts {
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var swiper = new Swiper('.swiper-container', {
+                slidesPerView: 6,
+                spaceBetween: 10,
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+            });
+        });
+    </script>
     <script>
         function AddToBasket() {
             var bookId = document.getElementById("bookId").value;
@@ -86,7 +163,7 @@
                     },
                     body: JSON.stringify(data)
                 })
-                    .then(Response => Response.json())
+                    .then(response => response.json())
                     .then(data => {
                         console.log('Success:', data);
                         if (data.res == false) {
@@ -103,15 +180,12 @@
                                 showConfirmButton: false,
                                 timer: 1500
                             });
-
                         }
                     })
                     .catch((error) => {
                         console.error('Error:', error);
                     });
-            } catch {
-
-            }
+            } catch { }
         }
     </script>
 }

@@ -951,3 +951,98 @@ button {
         text-decoration: none;
         cursor: pointer;
     }
+
+.swiper-container {
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    padding: 20px 0;
+    background-color: #f5f5f5; /* Subtle background color */
+    border-radius: 10px; /* Slightly rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.swiper-slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px; /* More pronounced rounding */
+    overflow: hidden;
+    text-align: center;
+    padding: 15px;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth animation */
+}
+
+    .swiper-slide:hover {
+        transform: scale(1.05); /* Slight scaling on hover */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    }
+
+    .swiper-slide img {
+        display: block;
+        margin: 0 auto 10px;
+        width: 120px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 5px; /* Rounded corners for images */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Light shadow for images */
+    }
+
+    .swiper-slide p {
+        margin: 0;
+        padding: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333; /* Darker text color for better readability */
+    }
+.swiper-pagination {
+    position: absolute;
+    text-align: center;
+    transition: .3s opacity;
+    transform: translate3d(0, 0, 0);
+    z-index: 10;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    display: flex; /* Center the pagination dots */
+    justify-content: center; /* Center the pagination dots */
+    margin-top: 10px; /* Add some margin to separate from the slides */
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+    position: absolute;
+    top: 50%;
+    width: 27px;
+    height: 44px;
+    margin-top: -22px;
+    z-index: 10;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background for visibility */
+    color: white;
+    border-radius: 3px;
+    transition: background-color 0.3s;
+}
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+        background-color: black; /* Darker background on hover */
+    }
+
+.swiper-button-next {
+    right: 10px;
+    left: auto;
+    color:black;
+}
+
+.swiper-button-prev {
+    left: 10px;
+    right: auto;
+    color: black;
+}

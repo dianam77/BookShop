@@ -1,0 +1,29 @@
+﻿@model DataAccess.Models.Comment
+
+@{
+    ViewData["Title"] = "Edit Reply";
+}
+
+<h1>Edit Reply</h1>
+<hr />
+<div class="form-horizontal">
+    <form asp-action="EditReply" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="BookId" />
+        <input type="hidden" asp-for="ReplyId" />
+        <input type="hidden" asp-for="UserId" />
+        <input type="hidden" asp-for="UserName" />
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="Text" class="control-label"></label>
+            <textarea asp-for="Text" class="form-control"></textarea>
+            <span asp-validation-for="Text" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Save" class="btn btn-primary" />
+        </div>
+    </form>
+</div>
+<a asp-action="Details" asp-route-id="@Model.ReplyId ?? @Model.BookId" class="btn btn-secondary">Back to Details</a>
+
