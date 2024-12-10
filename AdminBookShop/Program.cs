@@ -1,7 +1,7 @@
 ﻿using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
-using DataAccess.Middlewares;
 using AdminBookShop;
+using DataAccess.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 

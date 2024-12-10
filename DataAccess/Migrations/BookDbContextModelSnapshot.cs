@@ -121,6 +121,10 @@ namespace DataAccess.Migrations
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("AverageRating")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
@@ -135,6 +139,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("Price")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RatingCount")
                         .HasColumnType("int");
 
                     b.Property<bool>("ShowHomePage")
@@ -188,6 +195,34 @@ namespace DataAccess.Migrations
                     b.HasIndex("ReplyId");
 
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("DataAccess.Models.RateBookModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("RateBooks");
                 });
 
             modelBuilder.Entity("DataAccess.Models.Role", b =>
@@ -449,6 +484,17 @@ namespace DataAccess.Migrations
                     b.Navigation("Reply");
                 });
 
+            modelBuilder.Entity("DataAccess.Models.RateBookModel", b =>
+                {
+                    b.HasOne("DataAccess.Models.Book", "Book")
+                        .WithMany("Ratings")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("DataAccess.Models.Role", null)
@@ -515,6 +561,8 @@ namespace DataAccess.Migrations
                     b.Navigation("BasketItems");
 
                     b.Navigation("Comment");
+
+                    b.Navigation("Ratings");
                 });
 
             modelBuilder.Entity("DataAccess.Models.Comment", b =>

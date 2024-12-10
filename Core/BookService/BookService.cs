@@ -2,8 +2,10 @@
 using DataAccess.Models;
 using DataAccess.Repositories.BookRepo;
 using DataAccess.Repositories.CommentRepo;
+using DataAccess.Repositories.RateBookRepo; // Added using directive for RateBookRepo
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Core.BookService
 {
@@ -12,12 +14,14 @@ namespace Core.BookService
         private readonly IBookRepository _bookRepository;
         private readonly IFileService _fileService;
         private readonly ICommentRepository _commentRepository;
+        private readonly IRateBookRepository _rateBookRepository;
 
-        public BookService(IBookRepository bookRepository, ICommentRepository commentRepository, IFileService fileService)
+        public BookService(IBookRepository bookRepository, ICommentRepository commentRepository, IFileService fileService, IRateBookRepository rateBookRepository)
         {
             _bookRepository = bookRepository;
             _commentRepository = commentRepository;
             _fileService = fileService;
+            _rateBookRepository = rateBookRepository;
         }
 
         public async Task AddComment(Comment comment)
@@ -114,7 +118,8 @@ namespace Core.BookService
             book.AuthorId = bookdto.AuthorId;
             book.IsAvail = bookdto.IsAvail;
             book.ShowHomePage = bookdto.ShowHomePage;
-            book.Created = DateTime.Now;
+            book.AverageRating = bookdto.AverageRating;
+            book.RatingCount = bookdto.RatingCount;
 
             if (bookdto.Img != null)
             {
@@ -200,6 +205,17 @@ namespace Core.BookService
             };
 
             return result;
+        }
+
+        // Added the new methods for rating
+        public async Task<RateBookModel> GetRatingByUserAndBook(string userId, int bookId)
+        {
+            return await _rateBookRepository.GetRatingByUserAndBook(userId, bookId);
+        }
+
+        public async Task AddRating(RateBookModel rateBook)
+        {
+            await _rateBookRepository.Add(rateBook);
         }
     }
 }

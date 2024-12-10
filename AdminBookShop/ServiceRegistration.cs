@@ -9,6 +9,7 @@ using DataAccess.Repositories.AuthorRepo;
 using DataAccess.Repositories.BasketRepo;
 using DataAccess.Repositories.BookRepo;
 using DataAccess.Repositories.CommentRepo;
+using DataAccess.Repositories.RateBookRepo;
 using Microsoft.AspNetCore.Identity;
 
 namespace AdminBookShop;
@@ -24,6 +25,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<OrderService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<IRateBookRepository, RateBookRepository>();
 
         services.AddIdentity<User, Role>(options => {
             options.Password.RequireDigit = false;
@@ -46,3 +48,4 @@ public static class InfrastructureServiceRegistration
         return services;
     }
 }
+

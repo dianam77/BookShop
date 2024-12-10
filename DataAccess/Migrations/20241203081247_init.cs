@@ -207,7 +207,9 @@ namespace DataAccess.Migrations
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsAvail = table.Column<bool>(type: "bit", nullable: false),
                     ShowHomePage = table.Column<bool>(type: "bit", nullable: false),
-                    AuthorId = table.Column<int>(type: "int", nullable: false)
+                    AuthorId = table.Column<int>(type: "int", nullable: false),
+                    AverageRating = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RatingCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -279,6 +281,28 @@ namespace DataAccess.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RateBooks",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    BookId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: false),
+                    RatedOn = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RateBooks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RateBooks_Books_BookId",
+                        column: x => x.BookId,
+                        principalTable: "Books",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -347,6 +371,11 @@ namespace DataAccess.Migrations
                 name: "IX_Comments_ReplyId",
                 table: "Comments",
                 column: "ReplyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RateBooks_BookId",
+                table: "RateBooks",
+                column: "BookId");
         }
 
         /// <inheritdoc />
@@ -372,6 +401,9 @@ namespace DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "Comments");
+
+            migrationBuilder.DropTable(
+                name: "RateBooks");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

@@ -23,6 +23,7 @@ namespace Core.BookService
         public int AuthorId { get; set; }
         public string? AuthorName { get; set; }
 
-  
+        public decimal AverageRating { get; set; } // Added for rating
+        public int RatingCount { get; set; } // Added for rating count
     }
 }

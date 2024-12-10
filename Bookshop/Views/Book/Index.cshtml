@@ -69,6 +69,19 @@
     <div class="swiper-button-prev"></div>
 </div>
 
+<h3>امتیازدهی:</h3>
+@if (User.Identity.IsAuthenticated)
+
+{
+    <jsuites-rating id="user-rating" value="@Model.UserRating" tooltip="Ugly, Bad, Average, Good, Outstanding"></jsuites-rating>
+    <p>میانگین امتیاز: <span id="average-rating">@Model.CurrentBook.AverageRating</span> (تعداد امتیازات: <span id="rating-count">@Model.CurrentBook.RatingCount</span>)</p>
+}
+
+else
+
+{
+    <p>برای ثبت امتیاز، لطفاً <a asp-controller="Account" asp-action="Login">وارد سیستم</a> شوید.</p>
+}
 
 
 <h3>نظرات:</h3>
@@ -128,26 +141,53 @@
 </form>
 
 
+
 @section Scripts {
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="https://jsuites.net/v5/jsuites.js"></script>
+    <script src="https://jsuites.net/v5/jsuites.webcomponents.js"></script>
+    <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" />
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var swiper = new Swiper('.swiper-container', {
-                slidesPerView: 6,
-                spaceBetween: 10,
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
+            const ratingComponent = document.getElementById('user-rating');
+            const bookId = document.getElementById('bookId').value;
+            const userId = '@Model.CurrentUserId';
+
+            ratingComponent.addEventListener('click', function () {
+                const rating = ratingComponent.getAttribute('value');
+
+                if (!userId) {
+                    alert("You need to log in to rate the book.");
+                    return;
+                }
+
+                fetch('/Book/RateBook', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ bookId: bookId, rating: rating, userId: userId }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.averageRating != null) {
+                            document.getElementById('average-rating').innerText = data.averageRating;
+                            document.getElementById('rating-count').innerText = data.ratingCount;
+                        } else {
+                            alert("An error occurred. Please try again.");
+                        }
+                    })
+                    .catch(error => {
+                        if (error.status === 401) {
+                            alert("You need to log in to rate the book.");
+                        } else {
+                            console.error('Error:', error);
+                        }
+                    });
             });
         });
-    </script>
-    <script>
+
         function AddToBasket() {
             var bookId = document.getElementById("bookId").value;
             var qty = document.getElementById("countInput").value;

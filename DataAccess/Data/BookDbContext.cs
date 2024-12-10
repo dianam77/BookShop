@@ -12,7 +12,19 @@ namespace DataAccess.Data
         public DbSet<Book> Books { get; set; }
         public DbSet<Basket> Baskets { get; set; }
         public DbSet<BasketItems> BasketItems { get; set; }
-
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<RateBookModel> RateBooks { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // Configuring precision for AverageRating
+            modelBuilder.Entity<Book>()
+                .Property(b => b.AverageRating)
+                .HasPrecision(18, 2);
+
+            // Additional configurations if necessary
+        }
     }
 }

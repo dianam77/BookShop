@@ -5,6 +5,8 @@ using DataAccess.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using DataAccess.Repositories.RateBookRepo;  // Add the namespace for IRateBookRepository
 
 namespace Bookshop.Controllers
 {
@@ -12,11 +14,14 @@ namespace Bookshop.Controllers
     {
         private readonly BookService _bookService;
         private readonly IFileService _fileService;
+        private readonly IRateBookRepository _rateBookRepository;
 
-        public BookController(BookService bookService, IFileService fileService)
+        public BookController(BookService bookService, IFileService fileService, IRateBookRepository rateBookRepository)
         {
             _bookService = bookService;
             _fileService = fileService; // Inject the file service
+            _rateBookRepository = rateBookRepository;
+
         }
 
         public async Task<IActionResult> Index(int id)
@@ -40,6 +45,74 @@ namespace Bookshop.Controllers
 
             return View(model);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RateBook([FromBody] RateBookModel model)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized("You need to log in to rate the book.");
+            }
+
+            var book = await _bookService.GetBookById(model.BookId);
+            if (book == null)
+            {
+                return BadRequest("Book not found.");
+            }
+
+            var existingRating = await _rateBookRepository.GetRatingByUserAndBook(model.UserId, model.BookId);
+
+            if (existingRating != null)
+            {
+                // Calculate new average by replacing the old rating with the new one
+                book.AverageRating = ((book.AverageRating * book.RatingCount)
+                                     - existingRating.Rating
+                                     + model.Rating) / book.RatingCount;
+
+                // Update the existing rating
+                existingRating.Rating = model.Rating;
+                existingRating.RatedOn = DateTime.Now;
+
+                await _rateBookRepository.Update(existingRating);
+            }
+            else
+            {
+                // Add new rating
+                book.RatingCount++;
+                book.AverageRating = ((book.AverageRating * (book.RatingCount - 1)) + model.Rating) / book.RatingCount;
+
+                var newRating = new RateBookModel
+                {
+                    UserId = model.UserId,
+                    BookId = model.BookId,
+                    Rating = model.Rating,
+                    RatedOn = DateTime.Now
+                };
+
+                await _rateBookRepository.Add(newRating);
+            }
+
+            await _bookService.UpdateBook(MapToBookDto(book));
+
+            return Json(new { averageRating = book.AverageRating, ratingCount = book.RatingCount });
+        }
+
+        private BookDto MapToBookDto(DataAccess.Models.Book book)
+        {
+            return new BookDto
+            {
+                Id = book.Id,
+                Title = book.Title,
+                Description = book.Description,
+                Price = book.Price,
+                IsAvail = book.IsAvail,
+                ShowHomePage = book.ShowHomePage,
+                Img = null, // Handle Img separately if needed
+                AuthorId = book.AuthorId,
+                AverageRating = book.AverageRating,
+                RatingCount = book.RatingCount
+            };
+        }
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> AddComment(int bookId, string text, int? replyId)
@@ -60,7 +133,6 @@ namespace Bookshop.Controllers
             await _bookService.AddComment(comment);
             return RedirectToAction("Index", new { id = bookId });
         }
-
 
         [HttpPost]
         [Authorize]
